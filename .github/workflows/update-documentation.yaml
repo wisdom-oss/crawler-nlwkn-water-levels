@@ -1,0 +1,15 @@
+name: Update Documentation
+on:
+  push:
+    paths:
+      - 'docs/**'
+      - 'static_docs/**'
+      - 'README.md'
+
+jobs:
+  trigger-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Request Documentation Update
+        run: |
+          curl -f -X PUT -H "Authorization:Bearer ${{secrets.DOCS_ADMIN_TOKEN}}" ${{secrets.DOCS_ADMIN_ENDPOINT}}/update > /dev/null

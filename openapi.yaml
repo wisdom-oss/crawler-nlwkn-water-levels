@@ -1,0 +1,19 @@
+openapi: 3.0.3
+info:
+  title: Microservice Template
+  description: Microservice Template
+  version: 1.0.0
+servers:
+  - url: 'https'
+paths:
+  /:
+    get:
+      responses:
+        200:
+          description: Hello There response
+          content:
+            text/plain:
+              schema:
+                type: string
+                pattern: '^hello there$'
+  

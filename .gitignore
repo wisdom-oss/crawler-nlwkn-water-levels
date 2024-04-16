@@ -1,0 +1,38 @@
+# ignore all files in the repository
+*
+
+# allow the gitignore file itself
+!.gitignore
+
+# allow all files in the static_docs directory
+!static_docs
+!static_docs/**
+
+# allow github workflows
+!.github
+!.github/*.yaml
+!.github/workflows
+!.github/workflows/*.yaml
+
+# allow markdown files
+!*.md
+
+# now allow all documentation files
+!README.md
+!openapi.yaml
+
+# now allow the Dockerfile
+!Dockerfile
+
+# now allow all files in the resources directory
+!resources
+!resources/**
+
+# allow all .go files
+!*.go
+!go.mod
+!go.sum
+
+# allow the following folders
+!globals/
+!routes/
