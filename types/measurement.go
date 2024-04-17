@@ -38,8 +38,12 @@ func (m *Measurement) FromDataFields(dataFields []*html.Node) (err error) {
 	if err = m.Station.Scan(dataFields[1].FirstChild.Data); err != nil {
 		return err
 	}
-	if err = m.Classification.Scan(dataFields[8].FirstChild.Data); err != nil {
-		return err
+	if strings.TrimSpace(dataFields[8].FirstChild.Data) == "-" {
+		_ = m.Classification.Scan(nil)
+	} else {
+		if err = m.Classification.Scan(dataFields[8].FirstChild.Data); err != nil {
+			return err
+		}
 	}
 	var date time.Time
 	date, err = time.Parse("02.01.2006", dataFields[5].FirstChild.Data)
