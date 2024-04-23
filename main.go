@@ -7,6 +7,8 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/georgysavva/scany/v2/pgxscan"
+
 	"github.com/PuerkitoBio/goquery"
 	"github.com/rs/zerolog/log"
 	healthcheckServer "github.com/wisdom-oss/go-healthcheck/server"
@@ -17,6 +19,13 @@ import (
 
 const crawlUrl = "https://www.grundwasserstandonline.nlwkn.niedersachsen.de/Messwerte"
 const tableID = "ctl00_MainContent_rgMesswerte_ctl00__"
+
+// crawlFrequency sets the time which needs to have after the last crawl before
+// accessing the page again
+var crawlFrequency time.Duration
+
+// tickerFrequency sets the interval at which the service checks if it may
+// access the page again
 
 // the main function bootstraps the http server and handlers used for this
 // microservice
@@ -42,7 +51,7 @@ func main() {
 	signal.Notify(cancelSignal, os.Interrupt)
 
 	// setup ticker for recurring data pulls
-	ticker := time.NewTicker(25 * time.Second)
+	ticker := time.NewTicker(1 * time.Minute)
 
 	// setup an http client
 	httpClient := http.Client{}
@@ -118,14 +127,45 @@ func main() {
 
 func writeMeasurements(measurements []types.Measurement) {
 	ctx := context.Background()
-	query, err := globals.SqlQueries.Raw("insert-measurement")
+	insertQuery, err := globals.SqlQueries.Raw("insert-measurement")
 	if err != nil {
 		log.Error().Err(err).Msg("unable to prepare sql query for measurement insertion")
 		return
 	}
+	nullCheckQuery, err := globals.SqlQueries.Raw("null-measurement-exists")
+	if err != nil {
+		log.Error().Err(err).Msg("unable to prepare sql query for measurement validity check")
+		return
+	}
+	updateQuery, err := globals.SqlQueries.Raw("update-measurement")
+	if err != nil {
+		log.Error().Err(err).Msg("unable to prepare sql query for measurement update")
+		return
+	}
 	for _, measurement := range measurements {
+		log.Debug().Str("station", measurement.Station.String).Msg("checking for valid data")
+		var dataInvalid bool
+		err = pgxscan.Get(ctx, globals.Db, &dataInvalid, nullCheckQuery, measurement.Station, measurement.Date)
+		if err != nil {
+			log.Error().Str("station", measurement.Station.String).Err(err).Msg("unable check for incomplete data")
+			continue
+		}
+		if dataInvalid {
+			log.Warn().Str("station", measurement.Station.String).Msg("found incomplete data. completing data")
+			_, err = globals.Db.Exec(ctx, updateQuery,
+				measurement.WaterLevelGOK,
+				measurement.WaterLevelNHN,
+				measurement.Classification,
+				measurement.Station,
+				measurement.Date)
+			if err != nil {
+				log.Error().Str("station", measurement.Station.String).Err(err).Msg("unable to update incomplete data")
+				continue
+			}
+			return
+		}
 		log.Debug().Str("station", measurement.Station.String).Msg("writing measurement data")
-		_, err := globals.Db.Exec(ctx, query,
+		_, err := globals.Db.Exec(ctx, insertQuery,
 			measurement.Station,
 			measurement.Date,
 			measurement.Classification,
