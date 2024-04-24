@@ -23,6 +23,14 @@ var crawlFrequency time.Duration
 // access the page again
 var tickerFrequency time.Duration
 
+var hcFunc = func() error {
+	_, err := downloadTablePage()
+	if err != nil {
+		return err
+	}
+	return globals.Db.Ping(context.Background())
+}
+
 // the main function bootstraps the http server and handlers used for this
 // microservice
 func main() {
@@ -32,10 +40,7 @@ func main() {
 
 	// create the healthcheck server
 	hcServer := healthcheckServer.HealthcheckServer{}
-	hcServer.InitWithFunc(func() error {
-		// test if the database is reachable
-		return globals.Db.Ping(context.Background())
-	})
+	hcServer.InitWithFunc(hcFunc)
 	err := hcServer.Start()
 	if err != nil {
 		l.Fatal().Err(err).Msg("unable to start healthcheck server")
