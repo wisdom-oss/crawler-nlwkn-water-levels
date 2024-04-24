@@ -2,7 +2,12 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"errors"
+	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"time"
@@ -77,9 +82,16 @@ func main() {
 			log.Info().Msg("checking for new data on the webpage")
 			res, err := httpClient.Get(crawlUrl)
 			if err != nil {
-				l.Error().Err(err).Msg("error while requesting measurement page")
+				res, err = doInsecurePull(err)
+				if err != nil {
+					log.Error().Err(err).Msg("unable to fetch measurement page")
+					break
+				}
+			} else {
+				log.Error().Err(err).Msg("unable to fetch measurement page")
 				break
 			}
+
 			page, err := goquery.NewDocumentFromReader(res.Body)
 			if err != nil {
 				l.Error().Err(err).Msg("unable to parse response into document")
@@ -144,6 +156,7 @@ func writeMeasurements(measurements []types.Measurement) {
 		return
 	}
 	for _, measurement := range measurements {
+		log := log.With().Str("writer", "measurements").Logger()
 		log.Debug().Str("station", measurement.Station.String).Msg("checking for valid data")
 		var dataInvalid bool
 		err = pgxscan.Get(ctx, globals.Db, &dataInvalid, nullCheckQuery, measurement.Station, measurement.Date)
@@ -152,7 +165,7 @@ func writeMeasurements(measurements []types.Measurement) {
 			continue
 		}
 		if dataInvalid {
-			log.Warn().Str("station", measurement.Station.String).Msg("found incomplete data. completing data")
+			log.Warn().Str("station", measurement.Station.String).Msg("found incomplete measurement data. updating data with crawled data")
 			_, err = globals.Db.Exec(ctx, updateQuery,
 				measurement.WaterLevelGOK,
 				measurement.WaterLevelNHN,
@@ -163,7 +176,7 @@ func writeMeasurements(measurements []types.Measurement) {
 				log.Error().Str("station", measurement.Station.String).Err(err).Msg("unable to update incomplete data")
 				continue
 			}
-			return
+			continue
 		}
 		log.Debug().Str("station", measurement.Station.String).Msg("writing measurement data")
 		_, err := globals.Db.Exec(ctx, insertQuery,
@@ -174,12 +187,14 @@ func writeMeasurements(measurements []types.Measurement) {
 			measurement.WaterLevelGOK)
 		if err != nil {
 			log.Error().Err(err).Msg("unable to insert/update station")
-			return
+			continue
 		}
 	}
+	log.Info().Msg("wrote measurement data into database")
 }
 
 func writeStations(stations []types.Station) {
+	log := log.With().Str("writer", "stations").Logger()
 	ctx := context.Background()
 	query, err := globals.SqlQueries.Raw("insert-station")
 	if err != nil {
@@ -196,8 +211,34 @@ func writeStations(stations []types.Station) {
 			station.Location)
 		if err != nil {
 			log.Error().Err(err).Msg("unable to insert/update station")
-			return
+			continue
 		}
 	}
 
+}
+
+// doInsecurePull checks the error and evaluates if an insecure pull is possible
+// and returns the result of the insecure pull
+func doInsecurePull(err error) (*http.Response, error) {
+	insecureHttpClient := http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
+	var urlErr *url.Error
+	if errors.As(err, &urlErr) {
+		var certErr *tls.CertificateVerificationError
+		if errors.As(urlErr, &certErr) {
+			var x509Err x509.CertificateInvalidError
+			if errors.As(certErr.Err, &x509Err) {
+				if x509Err.Reason == x509.Expired {
+					log.Warn().Msg("server certificate expired. retrying access without certificate verification")
+					res, err := insecureHttpClient.Get(crawlUrl)
+					if err != nil {
+						return nil, fmt.Errorf("unable to execute insecure pull: %w", err)
+					}
+					return res, nil
+				} else {
+					return nil, fmt.Errorf("certificate is invalid due to other reasons than expiry: %w", err)
+				}
+			}
+		}
+	}
+	return nil, err
 }
