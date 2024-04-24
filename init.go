@@ -33,6 +33,7 @@ func init() {
 	loadServiceConfiguration()
 	connectDatabase()
 	loadPreparedQueries()
+	parseDurations()
 	log.Info().Msg("initialization process finished")
 }
 
@@ -146,4 +147,11 @@ func parseDurations() {
 		log.Warn().Err(err).Msg("crawling interval not parseable. using default")
 	}
 	crawlFrequency = interval
+	log.Debug().Msg("parsing crawling interval")
+	ticker, err := time.ParseDuration(globals.Environment["CRAWL_TICKER"])
+	if err != nil {
+		ticker = 1 * time.Minute
+		log.Warn().Err(err).Msg("crawling interval not parseable. using default")
+	}
+	tickerFrequency = ticker
 }

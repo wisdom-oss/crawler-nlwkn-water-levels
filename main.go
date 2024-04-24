@@ -26,6 +26,7 @@ var crawlFrequency time.Duration
 
 // tickerFrequency sets the interval at which the service checks if it may
 // access the page again
+var tickerFrequency time.Duration
 
 // the main function bootstraps the http server and handlers used for this
 // microservice
@@ -51,7 +52,7 @@ func main() {
 	signal.Notify(cancelSignal, os.Interrupt)
 
 	// setup ticker for recurring data pulls
-	ticker := time.NewTicker(1 * time.Minute)
+	ticker := time.NewTicker(tickerFrequency)
 
 	// setup an http client
 	httpClient := http.Client{}
@@ -68,7 +69,7 @@ func main() {
 			if lastCrawlCall.IsZero() {
 				goto crawling
 			}
-			if time.Now().Sub(lastCrawlCall) < 6*time.Hour {
+			if time.Now().Sub(lastCrawlCall) < crawlFrequency {
 				log.Warn().Msg("already called crawl in the last 6h, skipping run")
 				break
 			}
