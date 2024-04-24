@@ -20,3 +20,6 @@ reported by the [NLWKN].
 It collects the information about the available stations and their reported
 water levels and stores them in different tables (one for the stations, one for
 the reported levels).
+
+[overview page]: https://www.grundwasserstandonline.nlwkn.niedersachsen.de/Messwerte
+[NLWKN]:  https://www.nlwkn.niedersachsen.de
