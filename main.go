@@ -87,9 +87,6 @@ func main() {
 					log.Error().Err(err).Msg("unable to fetch measurement page")
 					break
 				}
-			} else {
-				log.Error().Err(err).Msg("unable to fetch measurement page")
-				break
 			}
 
 			page, err := goquery.NewDocumentFromReader(res.Body)
