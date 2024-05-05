@@ -3,7 +3,7 @@ module microservice
 go 1.22.0
 
 require (
-	github.com/PuerkitoBio/goquery v1.9.1
+	github.com/PuerkitoBio/goquery v1.9.2
 	github.com/georgysavva/scany/v2 v2.1.3
 	github.com/jackc/pgx/v5 v5.5.5
 	github.com/joho/godotenv v1.5.1
