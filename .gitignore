@@ -36,3 +36,4 @@
 # allow the following folders
 !globals/
 !routes/
+!types/

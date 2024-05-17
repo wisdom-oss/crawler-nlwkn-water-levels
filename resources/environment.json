@@ -2,6 +2,8 @@
   "required": ["PG_HOST", "PG_USER", "PG_PASS"],
   "optional": {
     "PG_PORT": "5432",
-    "QUERY_FILE_LOCATION": "./queries.sql"
+    "QUERY_FILE_LOCATION": "./queries.sql",
+    "CRAWL_INTERVAL": "3h",
+    "CRAWL_TICKER": "1m"
   }
 }

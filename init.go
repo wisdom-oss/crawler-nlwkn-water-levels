@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	wisdomType "github.com/wisdom-oss/commonTypes/v2"
@@ -32,6 +33,7 @@ func init() {
 	loadServiceConfiguration()
 	connectDatabase()
 	loadPreparedQueries()
+	parseDurations()
 	log.Info().Msg("initialization process finished")
 }
 
@@ -135,4 +137,21 @@ func loadPreparedQueries() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to load prepared queries")
 	}
+}
+
+func parseDurations() {
+	log.Debug().Msg("parsing crawling interval")
+	interval, err := time.ParseDuration(globals.Environment["CRAWL_INTERVAL"])
+	if err != nil {
+		interval = 3 * time.Hour
+		log.Warn().Err(err).Msg("crawling interval not parseable. using default")
+	}
+	crawlFrequency = interval
+	log.Debug().Msg("parsing crawling interval")
+	ticker, err := time.ParseDuration(globals.Environment["CRAWL_TICKER"])
+	if err != nil {
+		ticker = 1 * time.Minute
+		log.Warn().Err(err).Msg("crawling interval not parseable. using default")
+	}
+	tickerFrequency = ticker
 }
