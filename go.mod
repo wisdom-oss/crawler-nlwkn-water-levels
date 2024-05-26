@@ -8,7 +8,7 @@ require (
 	github.com/jackc/pgx/v5 v5.5.5
 	github.com/joho/godotenv v1.5.1
 	github.com/qustavo/dotsql v1.2.0
-	github.com/rs/zerolog v1.32.0
+	github.com/rs/zerolog v1.33.0
 	github.com/twpayne/go-geom v1.5.4
 	github.com/twpayne/pgx-geom v0.0.0-20240315001804-85b6e06bd7e0
 	github.com/wisdom-oss/commonTypes/v2 v2.0.1
