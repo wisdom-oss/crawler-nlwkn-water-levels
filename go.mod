@@ -5,7 +5,7 @@ go 1.22.0
 require (
 	github.com/PuerkitoBio/goquery v1.9.1
 	github.com/georgysavva/scany/v2 v2.1.3
-	github.com/jackc/pgx/v5 v5.5.5
+	github.com/jackc/pgx/v5 v5.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/qustavo/dotsql v1.2.0
 	github.com/rs/zerolog v1.32.0
