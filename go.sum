@@ -61,8 +61,8 @@ github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsT
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/twpayne/go-geom v1.5.4 h1:b8fiZd0SsEmQEeUdz2atT6KggF1KHiaZIi3DGi5p+sI=
 github.com/twpayne/go-geom v1.5.4/go.mod h1:Hw8RszQ2/d9Y/KfOm9CvUJo78BOoIA5g0e4P7JCVKvo=
-github.com/twpayne/pgx-geom v0.0.0-20240315001804-85b6e06bd7e0 h1:bploenmSByoTHV1RCXJdVM0z36g1Lg3S8gaCNgdfbQo=
-github.com/twpayne/pgx-geom v0.0.0-20240315001804-85b6e06bd7e0/go.mod h1:rUjv/MgeOmPZqUbLY7Qgq56dAAHE28S7FZMFtXQMRoI=
+github.com/twpayne/pgx-geom v0.0.1 h1:1duBuqGaU3rCGGJzRzpKs/4nq9uobx6uSoAInsfVvuE=
+github.com/twpayne/pgx-geom v0.0.1/go.mod h1:rUjv/MgeOmPZqUbLY7Qgq56dAAHE28S7FZMFtXQMRoI=
 github.com/wisdom-oss/commonTypes/v2 v2.0.1 h1:TWW4j+MsXca9CgiN0INFi05os3rSzSNTQJhBfwXx0cQ=
 github.com/wisdom-oss/commonTypes/v2 v2.0.1/go.mod h1:bJJyW1qbkihERIITv2ZO5eyPifMD4sCGeEXHQkpDglo=
 github.com/wisdom-oss/go-healthcheck v1.0.2 h1:GB6XFXo1mO9GDcQwXrK6edH9x1qGxZB0JcL4y+tSYh4=
